@@ -23,7 +23,11 @@ app.get('/hello', (req, res) => {
 // Endpoint to send notification
 app.post('/send-notification', async (req, res) => {
   const { pushToken, message } = req.body;
-
+if(pushToken){
+    console.log(pushToken)
+}else{
+    console.log("token is undefined")
+}
   // Check if the push token is valid
   if (!Expo.isExpoPushToken(pushToken)) {
     return res.status(400).send('Invalid push token');
@@ -34,7 +38,7 @@ app.post('/send-notification', async (req, res) => {
     to: pushToken,
     sound: 'default',
     title: 'Notification Title',
-    body: message,
+    body: "this is notification from ther expo app",
   };
 
   try {
