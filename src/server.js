@@ -13,7 +13,7 @@ import { Expo } from "expo-server-sdk";
 
 import { APP_PORT } from "./constants.js";
 import db from "./config/database.js";
-import router from "./routes/auth.js";
+import router from "./routes/auth.route.js";
 import { fileURLToPath } from 'url';
 const app = express();
 const expo = new Expo();
