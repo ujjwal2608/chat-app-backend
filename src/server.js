@@ -9,15 +9,12 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import { Expo } from "expo-server-sdk";
+import { app,server } from './Socket/socket.js';
 
-
-import { APP_PORT } from "./constants.js";
 import db from "./config/database.js";
 import authRouter from "./routes/auth.route.js";
 import messageRouter from './routes/message.route.js';
-import { fileURLToPath } from 'url';
-const app = express();
-const expo = new Expo();
+
 
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = dirname(__filename);
@@ -37,7 +34,7 @@ app.use(authRouter);
 app.use(messageRouter);
 db();
 // Start the server
-app.listen(process.env.PORT, () => {
+server.listen(process.env.PORT, () => {
   console.log(`Server is running on http://localhost:${process.env.PORT}`);
 });
 

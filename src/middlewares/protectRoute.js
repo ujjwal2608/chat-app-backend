@@ -21,7 +21,6 @@ const protectRoute = async (req, res, next) => {
     if (!decoded) {
       return res.status(401).json({ error: "Unauthorized - Invalid Token" });
     }
-    console.log(decoded);
     // Find the user by ID and attach it to the request object
     const user = await User.findById(decoded._id).select("-password");
 
