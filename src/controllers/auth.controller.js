@@ -46,29 +46,42 @@ console.log(user)
 
 export const register = async (req, res) => {
     try {
-      const { phoneNumber, password,name } = req.body;
+      const { phoneNumber, password, name } = req.body;
   
-      // if any one of the field from phoneNumber and password is not filled
-      if (!phoneNumber || !password||!name) {
+      // Check if any required fields are missing
+      if (!phoneNumber || !password || !name) {
         return res.json({
           success: false,
-          message: "phoneNumber or password or name is empty",
+          message: "phoneNumber, password, or name is empty",
         });
       }
+  
+      // Check if a user with the same phone number already exists
+      const existingUser = await UserModel.findOne({ phoneNumber });
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message: "A user with this phone number already exists",
+        });
+      }
+  
+      // Hash the password
       req.body.password = await bcrypt.hash(password, 10);
   
+      // Create and save the new user
       const user = new UserModel(req.body);
       await user.save();
   
       return res.json({
         success: true,
-        message: "user registered successfully",
+        message: "User registered successfully",
         data: user,
       });
     } catch (error) {
       return res.status(500).send({ err: error.message });
     }
   };
+  
   
   export const resetPassword = async (req, res) => {
     try {
