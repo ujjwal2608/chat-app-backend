@@ -12,7 +12,6 @@ export const login = async (req, res) => {
   try {
     const { phoneNumber, password } = req.body;
     const user = await UserModel.findOne({ phoneNumber });
-console.log(user)
     if (!user) {
       return res.status(400).json({
         success: false,
