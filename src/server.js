@@ -2,10 +2,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import path from 'path';
-import { dirname } from 'path';
 
-import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import { Expo } from "expo-server-sdk";
@@ -14,7 +11,7 @@ import { app,server } from './Socket/socket.js';
 import db from "./config/database.js";
 import authRouter from "./routes/auth.route.js";
 import messageRouter from './routes/message.route.js';
-
+import userRouter from './routes/user.route.js';
 
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = dirname(__filename);
@@ -32,6 +29,7 @@ app.get("/hello", (req, res) => {
 });
 app.use(authRouter);
 app.use(messageRouter);
+app.use(userRouter);
 db();
 // Start the server
 server.listen(process.env.PORT, () => {
