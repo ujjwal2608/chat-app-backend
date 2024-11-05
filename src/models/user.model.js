@@ -13,7 +13,8 @@ const userSchema = new Schema(
     },
     phoneNumber:{
       type:Number,
-      required:true
+      required:true,
+      unique: true // Ensures phone numbers are unique
     }
   
   },
