@@ -1,183 +1,40 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-import jwt from 'jsonwebtoken';
-import { JWT_SECRET_KEY } from '@constants/app';
+import jwt from "jsonwebtoken";
+import User from "../models/user.model.js";
 
-import UserModel from '@models/user';
-
-
-
-export const isAdmin= async (
-  req,
-  res,
-  next,
-) => {
-  // const { email } = req.body;
-
-  const tokenInReq = getAuthToken(req.headers?.authorization);
-
-  // receiving token from the header
-  const token = tokenInReq || req.body.token || req.query.token;
-
-  if (token) {
-    try {
-      // decode token with TOKEN key to extract the user
-      const decoded = jwt.verify(token, JWT_SECRET_KEY);
-
-      // saving the current user in req.user
-      req.user = decoded;
-
-      // checking if the logged in user is ADMIN or not
-      // @ts-ignore
-      // const user = await UserModel.findOne({ _id: decoded?._id }).select('-password');
-      const user = await UserModel.findOne({ _id: decoded?._id, userType: 'ADMIN' }).select(
-        '-password',
-      );
-
-      if (!user) {
-        // if not admin
-        return res.status(403).json({ err: 'Not allowed to perform operation' });
-      }
-
-      // if admin, pass to the next function call
-      return next();
-    } catch (error) {
-      return res.status(401).json({ msg: 'Invalid User Auth Token', err: error.message });
-    }
-  } else {
-    return res.status(400).json({ err: 'No Auth Token Found' });
-  }
-};
-
-export const checkAuth = async (
-  req,
-  res,
-  next,
-) => {
+const protectRoute = async (req, res, next) => {
   try {
-    const tokenInReq = getAuthToken(req.headers?.authorization);
+    // Check for the token in the Authorization header
+    const authHeader = req.headers.authorization;
 
-    // receiving token from the header
-    const token = tokenInReq || req.body.token || req.query.token;
-
-    if (token) {
-      try {
-        const decoded = jwt.verify(token, JWT_SECRET_KEY);
-        req.user = decoded;
-
-        // @ts-ignore
-        const user = await UserModel.findOne({ _id: decoded?._id }).select('-password');
-
-        if (!user) {
-          return res.status(500).json({ err: 'Auth failed' });
-        }
-        return next();
-      } catch (error) {
-        return res.status(401).json({ msg: 'Invalid User Auth Token', err: error.message });
-      }
-    } else {
-      return res.status(400).json({ err: 'No Auth Token Found' });
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res
+        .status(401)
+        .json({ error: "Unauthorized - No Token Provided" });
     }
-  } catch (error) {
-    return res.status(500).json({ err: 'Something went wrong!' });
-  }
-};
 
-export const checkSameUser= async (
-  req,
-  res,
-  next,
-) => {
-  try {
-    const { id: idFromQuery } = req.query;
-    const { id: idFromParams } = req.params;
-    const tokenInReq = getAuthToken(req.headers?.authorization);
+    // Extract the token from the header
+    const token = authHeader.split(" ")[1];
 
-    // receiving token from the header
-    const token = tokenInReq || req.body.token || req.query.token;
+    // Verify the token
+    const decoded = jwt.verify(token, process.env.TOKEN_KEY);
 
-    if (token) {
-      try {
-        const decoded = jwt.verify(token, JWT_SECRET_KEY);
-        req.user = decoded;
-
-        // @ts-ignore
-        const tokenId = decoded?._id;
-
-        const foundInQuery = idFromQuery === tokenId;
-        const foundInParams = idFromParams === tokenId;
-
-        const allowed = foundInQuery || foundInParams;
-
-        if (!allowed) {
-          return res.status(403).json({ err: 'Not allowed to perform operation' });
-        }
-
-        return next();
-      } catch (error) {
-        return res.status(401).json({ msg: 'Invalid User Auth Token', err: error.message });
-      }
-    } else {
-      return res.status(400).json({ err: 'No Auth Token Found' });
+    if (!decoded) {
+      return res.status(401).json({ error: "Unauthorized - Invalid Token" });
     }
-  } catch (error) {
-    return res.status(500).json({ err: 'Something went wrong!' });
-  }
-};
+    console.log(decoded);
+    // Find the user by ID and attach it to the request object
+    const user = await User.findById(decoded._id).select("-password");
 
-export const checkSameUserOrAdmin= async (
-  req,
-  res,
-  next,
-) => {
-  try {
-    const { id: idFromQuery } = req.query;
-    const { id: idFromParams } = req.params;
-    const tokenInReq = getAuthToken(req.headers?.authorization);
-
-    // receiving token from the header
-    const token = tokenInReq || req.body.token || req.query.token;
-
-    if (token) {
-      try {
-        const decoded = jwt.verify(token, JWT_SECRET_KEY);
-        req.user = decoded;
-
-        // @ts-ignore
-        const tokenId = decoded?._id;
-
-        const foundInQuery = idFromQuery === tokenId;
-        const foundInParams = idFromParams === tokenId;
-
-        let allowed = foundInQuery || foundInParams;
-
-        if (!allowed) {
-          allowed = !!(await UserModel.findOne({ _id: tokenId, userType: 'ADMIN' }).select(
-            '-password',
-          ));
-        }
-
-        if (!allowed) {
-          return res.status(403).json({ err: 'Not allowed to perform operation' });
-        }
-
-        return next();
-      } catch (error) {
-        return res.status(401).json({ msg: 'Invalid User Auth Token', err: error.message });
-      }
-    } else {
-      return res.status(400).json({ err: 'No Auth Token Found' });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
     }
+
+    req.user = user;
+    next();
   } catch (error) {
-    return res.status(500).json({ err: 'Something went wrong!' });
+    console.log("Error in protectRoute middleware: ", error.message);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
-const getAuthToken = (authHeader) => {
-  if (!authHeader) {
-    return '';
-  }
-
-  const [, tokenInReq] = authHeader.split('Bearer ');
-
-  return tokenInReq;
-};
+export default protectRoute;

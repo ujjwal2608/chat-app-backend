@@ -13,7 +13,8 @@ import { Expo } from "expo-server-sdk";
 
 import { APP_PORT } from "./constants.js";
 import db from "./config/database.js";
-import router from "./routes/auth.route.js";
+import authRouter from "./routes/auth.route.js";
+import messageRouter from './routes/message.route.js';
 import { fileURLToPath } from 'url';
 const app = express();
 const expo = new Expo();
@@ -32,7 +33,8 @@ app.get("/", (req, res) => {
 app.get("/hello", (req, res) => {
   res.send("Hello, world!");
 });
-app.use(router);
+app.use(authRouter);
+app.use(messageRouter);
 db();
 // Start the server
 app.listen(process.env.PORT, () => {
