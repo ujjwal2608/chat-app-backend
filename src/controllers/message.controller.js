@@ -54,16 +54,27 @@ export const getMessages = async (req, res) => {
   try {
     const { id: userToChatId } = req.params;
     const senderId = req.user._id;
+    
+    // Set default values for pagination
+    const page = parseInt(req.query.page) || 1; // Page number
+    const limit = 20; // Fixed limit of 20 messages per request
 
     // Find the conversation between the sender and the specified user
     const conversation = await Conversation.findOne({
       participants: { $all: [senderId, userToChatId] },
-    }).populate("messages"); // Load the actual messages instead of just their IDs
+    }).populate({
+      path: "messages",
+      options: {
+        sort: { createdAt: -1 }, // Sort by createdAt in descending order to get the latest messages
+        skip: (page - 1) * limit, // Skip messages based on the page number
+        limit: limit, // Limit to 20 messages
+      },
+    });
 
     // If no conversation is found, return an empty array
     if (!conversation) return res.status(200).json([]);
 
-    // Return the messages in the conversation
+    // Return the paginated messages in the conversation
     const messages = conversation.messages;
     res.status(200).json(messages);
   } catch (error) {
