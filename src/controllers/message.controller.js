@@ -35,7 +35,7 @@ export const sendMessage = async (req, res) => {
     // Save both the conversation and the new message in parallel
     await Promise.all([conversation.save(), newMessage.save()]);
     const receiverSocketId = getReceiverSocketId(receiverId);
-    console.log(receiverSocketId)
+    console.log("reciver socket id",receiverSocketId)
 		if (receiverSocketId) {
       console.log(receiverSocketId)
 			// io.to(<socket_id>).emit() used to send events to specific client
