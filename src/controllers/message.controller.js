@@ -38,7 +38,7 @@ export const sendMessage = async (req, res) => {
     console.log("reciver socket id",receiverSocketId)
 		if (receiverSocketId) {
       console.log(receiverSocketId)
-			// io.to(<socket_id>).emit() used to send events to specific client
+			// io.to(<socket_id>).emit(x) used to send events to specific client
 			io.to(receiverSocketId).emit("newMessage", newMessage);
 		}
     // Return the saved message as the response
@@ -69,6 +69,16 @@ export const getMessages = async (req, res) => {
         skip: (page - 1) * limit, // Skip messages based on the page number
         limit: limit, // Limit to 20 messages
       },
+      populate: [
+        {
+          path: "senderId", // Populate the sender user info
+          select: "name phoneNumber", // Select the fields you need from the User model
+        },
+        {
+          path: "receiverId", // Populate the receiver user info
+          select: "name phoneNumber", // Select the fields you need from the User model
+        },
+      ],
     });
 
     // If no conversation is found, return an empty array
