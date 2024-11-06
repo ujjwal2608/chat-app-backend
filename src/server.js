@@ -6,7 +6,7 @@ dotenv.config();
 import bodyParser from "body-parser";
 import cors from "cors";
 import { Expo } from "expo-server-sdk";
-import { app,server } from './socket/socket.js';
+import { app,server } from './Socket/socket.js';
 
 import db from "./config/database.js";
 import authRouter from "./routes/auth.route.js";
