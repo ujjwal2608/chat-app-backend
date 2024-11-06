@@ -84,13 +84,8 @@ export const getMessages = async (req, res) => {
     // If no conversation is found, return an empty array
     if (!conversation) return res.status(200).json([]);
 
-<<<<<<< HEAD
     // Return the messages in the conversation
     const messages = conversation.messages.reverse();
-=======
-    // Return the paginated messages in the conversation
-    const messages = conversation.messages;
->>>>>>> d279ae829d56bc549c1102281ac97b9ed3f1aca4
     res.status(200).json(messages);
   } catch (error) {
     console.log("Error in getMessages controller: ", error.message);
