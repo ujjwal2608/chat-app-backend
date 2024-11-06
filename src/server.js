@@ -1,21 +1,19 @@
 // Import required modules
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
-
 
 import bodyParser from "body-parser";
 import cors from "cors";
 import { Expo } from "expo-server-sdk";
-import { app,server } from './Socket/socket.js';
+import { app, server } from "./Socket/socket.js";
 
 import db from "./config/database.js";
 import authRouter from "./routes/auth.route.js";
-import messageRouter from './routes/message.route.js';
-import userRouter from './routes/user.route.js';
+import messageRouter from "./routes/message.route.js";
+import userRouter from "./routes/user.route.js";
 
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = dirname(__filename);
-
 
 // dotenv.config({path:path.resolve(__dirname,'../.env')});
 app.use(bodyParser.json());
@@ -32,7 +30,7 @@ app.use(messageRouter);
 app.use(userRouter);
 db();
 // Start the server
-server.listen(process.env.PORT||4000, () => {
+server.listen(process.env.PORT || 4000, () => {
   console.log(`Server is running on http://localhost:${process.env.PORT}`);
 });
 
