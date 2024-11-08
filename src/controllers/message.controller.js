@@ -85,7 +85,7 @@ export const getMessages = async (req, res) => {
     if (!conversation) return res.status(200).json([]);
 
     // Return the paginated messages in the conversation
-    const messages = conversation.messages.reverse();
+    const messages = conversation.messages;
     res.status(200).json(messages);
   } catch (error) {
     console.log("Error in getMessages controller: ", error.message);
