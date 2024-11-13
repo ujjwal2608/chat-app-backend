@@ -25,6 +25,7 @@ io.on("connection", (socket) => {
 	const userPhone = socket.handshake.query.userPhone;
 	userSocketMap[userId] = socket.id;
 	console.log(`User ${userId} connected with socket ID ${socket.id}`);
+	io.emit("user_joined", { userId, userPhone });
 	io.emit("getOnlineUsers", Object.keys(userSocketMap));
 	console.log("online users: ", Object.keys(userSocketMap));
 
@@ -39,16 +40,17 @@ io.on("connection", (socket) => {
 	socket.on("call", (data) => {
 		let calleeId = data.calleeId;
 		let rtcMessage = data.rtcMessage;
-		socket.to(calleeId).emit("newCall", {
+		socket.to(calleeId).emit("incomming_call", {
 			callerId: userPhone,
 			rtcMessage: rtcMessage,
 		});
 	});
 
+	
 	socket.on("answerCall", (data) => {
 		let callerId = data.callerId;
 		let rtcMessage = data.rtcMessage;
-		socket.to(callerId).emit("callAnswered", {
+		socket.to(callerId).emit("call_accepted", {
 			callee: userPhone,
 			rtcMessage: rtcMessage,
 		});
