@@ -22,16 +22,47 @@ io.on("connection", (socket) => {
 	console.log("a user connected", socket.id);
 
 	const userId = socket.handshake.query.userId;
+	const userPhone = socket.handshake.query.userPhone;
 	userSocketMap[userId] = socket.id;
 	console.log(`User ${userId} connected with socket ID ${socket.id}`);
-	// io.emit() is used to send events to all the connected clients
 	io.emit("getOnlineUsers", Object.keys(userSocketMap));
-	console.log("online users: ",Object.keys(userSocketMap));
-	// socket.on() is used to listen to the events. can be used both on client and server side
+	console.log("online users: ", Object.keys(userSocketMap));
+
 	socket.on("disconnect", () => {
 		delete userSocketMap[userId];
 		console.log(`User ${userId} disconnected`);
-	  });
+	});
+
+	console.log(userPhone, "Connected");
+	socket.join(userPhone);
+
+	socket.on("call", (data) => {
+		let calleeId = data.calleeId;
+		let rtcMessage = data.rtcMessage;
+		socket.to(calleeId).emit("newCall", {
+			callerId: userPhone,
+			rtcMessage: rtcMessage,
+		});
+	});
+
+	socket.on("answerCall", (data) => {
+		let callerId = data.callerId;
+		let rtcMessage = data.rtcMessage;
+		socket.to(callerId).emit("callAnswered", {
+			callee: userPhone,
+			rtcMessage: rtcMessage,
+		});
+	});
+
+	socket.on("ICEcandidate", (data) => {
+		console.log("ICEcandidate data.calleeId", data.calleeId);
+		let calleeId = data.calleeId;
+		let rtcMessage = data.rtcMessage;
+		socket.to(calleeId).emit("ICEcandidate", {
+			sender: userPhone,
+			rtcMessage: rtcMessage,
+		});
+	});
 });
 
 export { app, io, server };
