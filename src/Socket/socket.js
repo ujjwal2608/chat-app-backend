@@ -37,34 +37,46 @@ io.on("connection", (socket) => {
 	console.log(userPhone, "Connected");
 	socket.join(userPhone);
 
-	socket.on("call", (data) => {
-		let calleeId = data.calleeId;
-		let rtcMessage = data.rtcMessage;
-		socket.to(calleeId).emit("incomming_call", {
-			callerId: userPhone,
-			rtcMessage: rtcMessage,
-		});
-	});
-
+	socket.on("call_user", (data) => {
+		const { targetUserId, rtcMessage } = data;
+		const targetSocketId = userSocketMap[targetUserId];
+		if (targetSocketId) {
+		  io.to(targetSocketId).emit("incoming_call", {
+			callerId: userId,
+			rtcMessage,
+		  });
+		}
+	  });
 	
-	socket.on("answerCall", (data) => {
-		let callerId = data.callerId;
-		let rtcMessage = data.rtcMessage;
-		socket.to(callerId).emit("call_accepted", {
-			callee: userPhone,
-			rtcMessage: rtcMessage,
-		});
-	});
-
-	socket.on("ICEcandidate", (data) => {
-		console.log("ICEcandidate data.calleeId", data.calleeId);
-		let calleeId = data.calleeId;
-		let rtcMessage = data.rtcMessage;
-		socket.to(calleeId).emit("ICEcandidate", {
-			sender: userPhone,
-			rtcMessage: rtcMessage,
-		});
-	});
+	  socket.on("accept_call", (data) => {
+		const { callerId, rtcMessage } = data;
+		const callerSocketId = userSocketMap[callerId];
+		if (callerSocketId) {
+		  io.to(callerSocketId).emit("call_accepted", {
+			calleeId: userId,
+			rtcMessage,
+		  });
+		}
+	  });
+	
+	  socket.on("decline_call", (data) => {
+		const { callerId } = data;
+		const callerSocketId = userSocketMap[callerId];
+		if (callerSocketId) {
+		  io.to(callerSocketId).emit("call_declined", { calleeId: userId });
+		}
+	  });
+	
+	  socket.on("ice_candidate", (data) => {
+		const { targetUserId, rtcMessage } = data;
+		const targetSocketId = userSocketMap[targetUserId];
+		if (targetSocketId) {
+		  io.to(targetSocketId).emit("ice_candidate", {
+			senderId: userId,
+			rtcMessage,
+		  });
+		}
+	  });
 });
 
 export { app, io, server };
