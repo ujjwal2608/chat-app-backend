@@ -10,6 +10,7 @@ const io = new Server(server, {
 		origin: ["https://chat-app-backend-tl4j.onrender.com"],
 		methods: ["GET", "POST"],
 	},
+	transports: ['websocket'],
 });
 
 export const getReceiverSocketId = (receiverId) => {
