@@ -35,12 +35,23 @@ io.on("connection", (socket) => {
 		
 		if (receiverSocketId) {
 			// Emit 'pickupCall' event to the specific user
-			io.to(receiverSocketId).emit("pickupCall", { from: userId });
+			io.to(receiverSocketId).emit("pickupCall", userId);
 			console.log(`Call event sent from ${userId} to ${receiverId}`);
 		} else {
 			console.log(`User ${receiverId} is not connected`);
 		}
 	});
+	socket.on("accept", (data) => {
+		const { receiverId } = data;
+		const receiverSocketId = getReceiverSocketId(receiverId);
+		if (receiverSocketId) {
+			// Emit 'pickupCall' event to the specific user
+			io.to(receiverSocketId).emit("callAccepted", userId);
+			console.log(`Call accepted by ${userId} from ${receiverId}`);
+		} else {
+			console.log(`User ${receiverId} is not connected`);
+		}
+	})
 	socket.on("disconnect", () => { 
 		delete userSocketMap[userId];
 		console.log(`User ${userId} disconnected`);
